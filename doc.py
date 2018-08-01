@@ -99,12 +99,14 @@ class Section:
         self.mode = 0
         self.currently_used = False
         self.sections = []
+        self.array = []
 
 
 class Section_Manager():
     def __init__(self):
         self.entry_point_section = Section("ENTRY NODE")
         self.current_section = None
+        self.orphan_section = Section("ORPHAN SECTION")
 
     def add_node(self, parent, sections):
         new_section = Section(sections[0])
@@ -152,7 +154,7 @@ class Section_Manager():
         sec = self.current_section
         if sec == None:
             print("No current section found data will be add without section")
-            #add data
+            self.orphan_section.com_data.append(data)
         else:
             sec.com_data.append(data)
 
@@ -167,11 +169,70 @@ class Section_Manager():
         for e in entry.sections:
             self.print_node(e, deepth)
 
-
+    def wirte_orphan_section_html(self):
+        table = []
+        simple_text = []
+        for line in self.orphan_section.com_data:
+            count = line.count('|')
+            if count > 0:
+                row = "<tr>\n"
+                for s in line.split("|"):
+                    row += "<td>" + s+ "</td>\n"
+                row += "</tr>\n"
+                table.append(row)
+            else:
+                simple_text.append(line)
+        return (table, simple_text)
 
 
 
 sec_mana = Section_Manager()
+
+header_html = """<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+}
+</style>
+</head>
+<body>
+"""
+
+foot_html = """</body>
+</html>"""
+
+colomn = """ <tr>
+    <th>name</th>
+    <th>type</th>
+    <th>comment</th>
+  </tr>"""
+
+def write_file_html():
+    f = open('output.html', 'w')
+    f.write(header_html)
+    for s in sec_mana.entry_point_section.sections:
+        pass
+        #To implement
+       # sec_mana.write_sections_html(f, s)
+
+    res = sec_mana.wirte_orphan_section_html()
+    table = res[0]
+    simple_text = res[1]
+
+    if table:
+        f.write("<table style=\"width:100%\">\n")
+        f.write(colomn)
+        for t in table:
+            f.write(t)
+        f.write("</table>\n")
+    for s in simple_text:
+        f.write(s + "<br />")
+
+    f.write(foot_html)
+    f.close()
+
 
 
 class Comment:
@@ -237,3 +298,5 @@ if __name__ == '__main__':
     get_config(f)
     process_files()
     sec_mana.print_tree()
+    print("no orphan section : " + str(sec_mana.orphan_section.com_data))
+    write_file_html()
