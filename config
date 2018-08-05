@@ -1,4 +1,4 @@
-INPUT = ./backup_file/serializable.cpp.1533196803
+INPUT = serializable.cpp
 
 
 DOC_TAG = //// ++++

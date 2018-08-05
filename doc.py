@@ -1,6 +1,7 @@
 #!/bin/python3
 
 import sys
+import os
 from enum import Enum
 import re
 
@@ -89,8 +90,6 @@ def tag_match_line(tags, line):
 ##format1 : <tag>[section][subsection][...](BLOCK|LINE|FILE|ENDTAG)
 
 
-
-
 class Section:
     def __init__(self, name):
         self.section_name = name
@@ -169,10 +168,18 @@ class Section_Manager():
         for e in entry.sections:
             self.print_node(e, deepth)
 
-    def wirte_orphan_section_html(self):
+
+    def write_orphan_section_html(self):
+        selection = {}
+        ret = self.write_html(self.orphan_section)
+        selection['other'] = ret
+        return selection
+
+
+    def write_html(self, section):
         table = []
         simple_text = []
-        for line in self.orphan_section.com_data:
+        for line in section.com_data:
             count = line.count('|')
             if count > 0:
                 row = "<tr>\n"
@@ -184,6 +191,13 @@ class Section_Manager():
                 simple_text.append(line)
         return (table, simple_text)
 
+
+    def write_sections_html(self):
+        selection = {}
+        for s in self.entry_point_section.sections:
+            ret = self.write_html(s)
+            selection[s.name] = ret
+        return selection
 
 
 sec_mana = Section_Manager()
@@ -209,29 +223,70 @@ colomn = """ <tr>
     <th>comment</th>
   </tr>"""
 
-def write_file_html():
-    f = open('output.html', 'w')
+def write_title(title):
+    return '<h2>' + title+  '</h2>'
+
+def write_file_html(filename, data):
+    f = open('output/' + filename + '.html' , 'w')
     f.write(header_html)
-    for s in sec_mana.entry_point_section.sections:
-        pass
-        #To implement
-       # sec_mana.write_sections_html(f, s)
-
-    res = sec_mana.wirte_orphan_section_html()
-    table = res[0]
-    simple_text = res[1]
-
-    if table:
-        f.write("<table style=\"width:100%\">\n")
-        f.write(colomn)
-        for t in table:
-            f.write(t)
-        f.write("</table>\n")
-    for s in simple_text:
-        f.write(s + "<br />")
-
+    f.write(data)
     f.write(foot_html)
     f.close()
+
+def create_index(titles, table, simple_text):
+    data = ""
+    #data += "<a href=\"index.html\">all</a>"
+    for t in titles:
+        data += "<a href=\"" + t + ".html" +  "\">" + t + "</a>"
+        data += "&#160;"
+
+    data += write_table_html(table)
+    write_file_html("index", data)
+
+
+def write_table_html(val):
+    data = ""
+    if val:
+        data += "<table style=\"width:100%\">\n"
+        data += colomn
+        for t in val:
+            data += t
+        data += "</table>\n"
+    return data
+
+def write_simple_data_html(val):
+    data = ""
+    for s in val:
+        data += s + "<br />"
+    return data
+
+
+
+def handle_output():
+    if not os.path.exists('output'):
+        os.makedirs('output')
+
+    res_section = sec_mana.write_sections_html()
+    res_orphan = sec_mana.write_orphan_section_html()
+    table = []
+    simple_text = []
+    titles = []
+
+    #put the data in the write order : table ans simple text
+    for key, value in res_section.items():
+        titles.append(key)
+        table += value[0]
+        simple_text += value[1]
+
+        data = "<a href=\"index.html\">back</a>"
+        data += write_title(key)
+        data += write_table_html(value[0])
+        data += write_simple_data_html(value[1])
+        write_file_html(key, data)
+
+    create_index(titles, table, simple_text)
+
+
 
 
 
@@ -297,6 +352,6 @@ if __name__ == '__main__':
     f = format_command_line()
     get_config(f)
     process_files()
-    sec_mana.print_tree()
-    print("no orphan section : " + str(sec_mana.orphan_section.com_data))
-    write_file_html()
+    #sec_mana.print_tree()
+    #print("no orphan section : " + str(sec_mana.orphan_section.com_data))
+    handle_output()
