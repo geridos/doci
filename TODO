@@ -1,0 +1,38 @@
+#open config
+
+#get the files to create the docs
+
+#get the list of the balise to create the doc
+#exemple /// folow by [section][subsection](type of fomat)[nbline# default 1]
+#        /// descrition
+#fomat : tab, list,
+
+
+# ouput :
+
+# if tab :
+#section
+    #sub section
+    # line(s) 1 | description
+    # line(s) 2 | description
+    # line(s) 3 | description
+
+
+#open file
+#create protocol object
+#with map of type / field name.
+
+# foreach line:
+
+# detect class tag, get next buffer
+
+#wait for the '# Serialisable field'
+
+
+
+#BLOCK = until we see an other comments with a different section or subsection.
+#LINE = define a number of line in the documentation
+#FILE = the whole file
+#ENDTAG = create until we see a END_TAG <tag>END_TAG
+
+create short cut vim.
